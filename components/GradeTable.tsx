@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { STUDENTS_DATA } from '../constants';
 import { ViewFilter } from '../types';
@@ -6,6 +5,7 @@ import CommentInput from './CommentInput';
 
 interface GradeTableProps {
   viewFilter: ViewFilter;
+  term: string;
 }
 
 interface ColumnDef {
@@ -15,7 +15,7 @@ interface ColumnDef {
   isComment?: boolean;
 }
 
-const GradeTable: React.FC<GradeTableProps> = ({ viewFilter }) => {
+const GradeTable: React.FC<GradeTableProps> = ({ viewFilter, term }) => {
   // Column definitions based on the provided design
   const columnSets: Record<ViewFilter, ColumnDef[]> = {
     all: [
@@ -74,6 +74,11 @@ const GradeTable: React.FC<GradeTableProps> = ({ viewFilter }) => {
 
   const currentColumns = columnSets[viewFilter];
 
+  const getCommentColumnHeader = () => {
+    if (viewFilter === 'qualities') return 'Nhận xét';
+    return term === 'Cuối năm' ? 'Nhận xét in học bạ' : 'Nhận xét';
+  };
+
   return (
     <div className="bg-white rounded-t-2xl shadow-lg overflow-hidden border border-gray-200 flex-1 flex flex-col min-h-0">
       <div className="overflow-auto custom-scrollbar flex-1 pb-40"> {/* Add padding bottom for dropdowns */}
@@ -119,7 +124,7 @@ const GradeTable: React.FC<GradeTableProps> = ({ viewFilter }) => {
               
               {viewFilter !== 'skills' && (
                 <th rowSpan={3} className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider min-w-[240px] bg-white border-l border-b border-gray-300">
-                  {viewFilter === 'qualities' ? 'Nhận xét' : 'Nhận xét in học bạ'}
+                  {getCommentColumnHeader()}
                 </th>
               )}
             </tr>
