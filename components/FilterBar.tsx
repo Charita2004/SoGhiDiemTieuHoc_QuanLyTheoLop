@@ -13,7 +13,6 @@ interface FilterBarProps {
 const FilterBar: React.FC<FilterBarProps> = ({ viewFilter, setViewFilter, term, setTerm }) => {
   const tabs: { label: string; value: ViewFilter }[] = [
     { value: 'all', label: 'Tất cả thông tin' },
-    { value: 'subjects', label: 'Môn học' },
     { value: 'skills', label: 'Năng lực' },
     { value: 'qualities', label: 'Phẩm chất' },
   ];
@@ -47,7 +46,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ viewFilter, setViewFilter, term, 
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-semibold text-gray-600">Tên lớp</label>
                 <select className="px-3 py-2 border border-gray-300 rounded bg-white text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 w-24 shadow-sm">
-                   <option>1A1</option>
+                   <option>1.1</option>
                    <option>1A2</option>
                 </select>
               </div>
@@ -110,10 +109,10 @@ const FilterBar: React.FC<FilterBarProps> = ({ viewFilter, setViewFilter, term, 
        <div className="mt-2 text-sm">
           <div className="font-bold text-gray-800">Số học sinh: {STUDENTS_DATA.length}</div>
           <div className="text-red-500 text-xs mt-1">
-             (Thầy cô có thể nhấn trực tiếp vào ô đánh giá phẩm chất, năng lực để sửa đánh giá)
+             ( Thầy Cô nhấn vào tab Năng lực hoặc Phẩm chất để nhập đánh giá và nhận xét)
           </div>
           <div className="text-red-500 text-xs">
-             (Thầy cô chủ nhiệm có thể nhấn trực tiếp vào các ô đánh giá kết quả cuối năm và xét lên lớp để thay đổi kết quả)
+             ( Thầy Cô nhấn vào tab Tất cả thông tin để nhập Nhận xét/ Nhận xét in học bạ và thực hiện Chốt sổ / Đồng bộ điểm )
           </div>
        </div>
     </div>
