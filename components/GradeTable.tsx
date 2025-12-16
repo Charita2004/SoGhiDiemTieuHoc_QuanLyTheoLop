@@ -73,11 +73,20 @@ const GradeTable: React.FC<GradeTableProps> = ({ viewFilter, term }) => {
   };
 
   const currentColumns = columnSets[viewFilter];
+  const isEndOfYearAll = viewFilter === 'all' && term === 'Cuối năm';
 
   const getCommentColumnHeader = () => {
     if (viewFilter === 'qualities') return 'Nhận xét';
     return term === 'Cuối năm' ? 'Nhận xét in học bạ' : 'Nhận xét';
   };
+
+  // Helper component for the Reward Cell
+  const RewardCell = () => (
+    <div className="w-[120px] h-[60px] border border-gray-300 rounded mx-auto p-1 flex flex-col justify-between bg-white cursor-pointer hover:border-blue-400 transition-colors">
+      <div className="text-gray-400 text-xs text-center mt-1">Bấm vào đây</div>
+      <div className="text-gray-400 text-[10px] text-right">0 / 200</div>
+    </div>
+  );
 
   return (
     <div className="bg-white rounded-t-2xl shadow-lg overflow-hidden border border-gray-200 flex-1 flex flex-col min-h-0">
@@ -101,6 +110,20 @@ const GradeTable: React.FC<GradeTableProps> = ({ viewFilter, term }) => {
                   <th colSpan={8} className="px-4 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider bg-white border-r border-b border-gray-300">
                     Năng lực cốt lõi
                   </th>
+                  {/* Additional Headers for End of Year */}
+                  {isEndOfYearAll && (
+                    <>
+                       <th rowSpan={3} className="px-2 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider bg-white border-r border-b border-gray-300 min-w-[80px]">
+                          Đánh giá KQGD
+                       </th>
+                       <th colSpan={2} className="px-2 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider bg-white border-r border-b border-gray-300">
+                          Khen thưởng
+                       </th>
+                       <th rowSpan={3} className="px-2 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider bg-white border-r border-b border-gray-300 min-w-[80px]">
+                          Chưa được lên lớp
+                       </th>
+                    </>
+                  )}
                 </>
               )}
               
@@ -162,6 +185,17 @@ const GradeTable: React.FC<GradeTableProps> = ({ viewFilter, term }) => {
                   <th colSpan={5} className="px-4 py-2 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider bg-white border-r border-b border-gray-300">
                     Năng lực đặc thù
                   </th>
+                  {/* End of Year Sub-headers */}
+                  {isEndOfYearAll && (
+                    <>
+                       <th rowSpan={2} className="px-2 py-2 text-center text-xs font-bold text-gray-700 uppercase tracking-wider bg-white border-r border-b border-gray-300 min-w-[140px]">
+                          Cuối năm
+                       </th>
+                       <th rowSpan={2} className="px-2 py-2 text-center text-xs font-bold text-gray-700 uppercase tracking-wider bg-white border-r border-b border-gray-300 min-w-[140px]">
+                          Đột xuất
+                       </th>
+                    </>
+                  )}
                 </>
               )}
               
@@ -233,7 +267,7 @@ const GradeTable: React.FC<GradeTableProps> = ({ viewFilter, term }) => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {STUDENTS_DATA.map((student) => (
+            {STUDENTS_DATA.map((student, studentIndex) => (
               <tr key={student.stt} className="hover:bg-blue-50/30 transition-colors group">
                 <td className="px-4 py-4 text-sm font-medium text-gray-900 sticky left-0 bg-white group-hover:bg-blue-50/30 transition-colors z-10 border-r border-gray-300 align-middle">{student.stt}</td>
                 <td className="px-4 py-4 text-sm text-gray-700 sticky left-[50px] bg-white group-hover:bg-blue-50/30 transition-colors z-10 border-r border-gray-300 align-middle">{student.id}</td>
@@ -254,6 +288,37 @@ const GradeTable: React.FC<GradeTableProps> = ({ viewFilter, term }) => {
                     </td>
                   );
                 })}
+
+                {/* Additional Body Cells for End of Year */}
+                {isEndOfYearAll && (
+                  <>
+                    {/* KQGD */}
+                    <td className="px-2 py-3 text-center border-r border-gray-300 align-middle">
+                      <span className="text-red-500 font-bold text-sm">
+                        {['X', 'T', 'H', 'C', 'H'][studentIndex % 5]}
+                      </span>
+                    </td>
+                    {/* Khen thưởng - Cuối năm */}
+                    <td className="px-2 py-3 text-center border-r border-gray-300 align-middle">
+                      <RewardCell />
+                    </td>
+                    {/* Khen thưởng - Đột xuất */}
+                    <td className="px-2 py-3 text-center border-r border-gray-300 align-middle">
+                      <RewardCell />
+                    </td>
+                    {/* Chưa được lên lớp */}
+                    <td className="px-2 py-3 text-center border-r border-gray-300 align-middle">
+                      <div className="flex justify-center">
+                         <input 
+                            type="checkbox" 
+                            className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer" 
+                            defaultChecked={studentIndex === 3} // Simulate one checked
+                          />
+                      </div>
+                    </td>
+                  </>
+                )}
+
                 {viewFilter !== 'skills' && (
                   <td className="px-2 py-3 border-l border-gray-300 align-top">
                     <CommentInput initialValue={student.status} placeholder="Nhập nhận xét..." />
