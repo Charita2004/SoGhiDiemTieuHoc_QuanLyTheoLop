@@ -109,10 +109,10 @@ const FilterBar: React.FC<FilterBarProps> = ({ viewFilter, setViewFilter, term, 
        <div className="mt-2 text-sm">
           <div className="font-bold text-gray-800">Số học sinh: {STUDENTS_DATA.length}</div>
           <div className="text-red-500 text-xs mt-1">
-             ( Thầy Cô nhấn vào tab Năng lực hoặc Phẩm chất để nhập đánh giá và nhận xét)
+             ( Thầy Cô nhấn vào tab Năng lực hoặc phẩm chất để nhập đánh giá và nhận xét)
           </div>
           <div className="text-red-500 text-xs">
-             ( Thầy Cô nhấn vào tab Tất cả thông tin để nhập Nhận xét/ Nhận xét in học bạ và thực hiện Chốt sổ / Đồng bộ điểm )
+             (Thầy Cô nhấn vào tab Tất cả thông tin để nhập Nhận xét/ Nhận xét in học bạ và thực hiện Chốt sổ / Đồng bộ điểm )
           </div>
        </div>
     </div>
