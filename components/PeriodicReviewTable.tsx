@@ -36,18 +36,6 @@ const PeriodicReviewTable: React.FC = () => {
               </select>
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-[14px] font-medium text-[#1f2937]">Tháng</label>
-              <select className="px-3 py-2 border border-gray-300 rounded-md bg-white text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 w-[140px] shadow-sm text-gray-700">
-                <option>7/2025</option>
-                <option>8/2025</option>
-                <option>9/2025</option>
-                <option>10/2025</option>
-                <option>11/2025</option>
-                <option>12/2025</option>
-              </select>
-            </div>
-            {/* Split Filters: Class and Subject */}
-            <div className="flex flex-col gap-1.5">
               <label className="text-[14px] font-medium text-[#1f2937]">Lớp</label>
               <select className="px-3 py-2 border border-gray-300 rounded-md bg-white text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 w-[100px] shadow-sm text-gray-700">
                 <option>1A2</option>
@@ -64,6 +52,28 @@ const PeriodicReviewTable: React.FC = () => {
                 <option>Đạo đức</option>
               </select>
             </div>
+              <div className="flex flex-col gap-1.5">
+              <label className="text-[14px] font-medium text-[#1f2937]">Học kỳ</label>
+              <select className="px-3 py-2 border border-gray-300 rounded-md bg-white text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 w-[140px] shadow-sm text-gray-700">
+                <option>Học kỳ 1</option>
+                <option>Học kỳ 2</option>
+
+              </select>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[14px] font-medium text-[#1f2937]">Tháng</label>
+              <select className="px-3 py-2 border border-gray-300 rounded-md bg-white text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 w-[140px] shadow-sm text-gray-700">
+                <option>7/2025</option>
+                <option>8/2025</option>
+                <option>9/2025</option>
+                <option>10/2025</option>
+                <option>11/2025</option>
+                <option>12/2025</option>
+              </select>
+            </div>
+
+            {/* Split Filters: Class and Subject */}
+            
           </div>
         </div>
 
