@@ -71,7 +71,7 @@ const PeriodicReviewTable: React.FC = () => {
              <div className="text-[#1f2937]">
                 <CloudUpload size={28} fill="#1f2937" className="text-white" />
              </div>
-             <span className="text-[#1f2937] font-semibold text-sm uppercase tracking-wide">Import file nhận xét định kì</span>
+             <span className="text-[#1f2937] font-semibold text-sm uppercase tracking-wide">Import file nhận xét đánh giá thường xuyên</span>
           </div>
           <div className="flex gap-8 text-sm text-[#3b82f6] font-medium">
              <button className="hover:text-blue-700 hover:underline">Mẫu Import</button>
