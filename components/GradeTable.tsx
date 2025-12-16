@@ -295,7 +295,7 @@ const GradeTable: React.FC<GradeTableProps> = ({ viewFilter, term }) => {
                     {/* KQGD */}
                     <td className="px-2 py-3 text-center border-r border-gray-300 align-middle">
                       <span className="text-red-500 font-bold text-sm">
-                        {['X', 'T', 'H', 'C', 'H'][studentIndex % 5]}
+                        {['T', 'T', 'H', 'C', 'H'][studentIndex % 5]}
                       </span>
                     </td>
                     {/* Khen thưởng - Cuối năm */}
