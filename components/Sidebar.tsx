@@ -24,7 +24,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed, activePa
       title: 'HÀNG THÁNG',
       icon: <CalendarDays size={20} />,
       items: [
-        { id: 'periodic_review', label: 'Nhập nhận xét định kì' },
+        { id: 'periodic_review', label: 'Nhận xét đánh giá thường xuyên' },
       ]
     }
   ];

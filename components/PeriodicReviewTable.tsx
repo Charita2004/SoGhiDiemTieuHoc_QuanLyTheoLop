@@ -44,14 +44,22 @@ const PeriodicReviewTable: React.FC = () => {
                 <option>Cuối năm</option>
               </select>
             </div>
+            {/* Split Filters: Class and Subject */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-[14px] font-medium text-[#1f2937]">Tên lớp</label>
-              <select className="px-3 py-2 border border-gray-300 rounded-md bg-white text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-w-[180px] shadow-sm text-gray-700">
-                <option>1A2 - Tin học</option>
-                <option>1A4 - Tin học</option>
-                <option>1A2 - Toán</option>
-                <option>1A2 - Tiếng Việt</option>
-                <option>1A2 - Đạo đức</option>
+              <label className="text-[14px] font-medium text-[#1f2937]">Lớp</label>
+              <select className="px-3 py-2 border border-gray-300 rounded-md bg-white text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 w-[100px] shadow-sm text-gray-700">
+                <option>1A2</option>
+                <option>1A3</option>
+                <option>1A4</option>
+              </select>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[14px] font-medium text-[#1f2937]">Môn</label>
+              <select className="px-3 py-2 border border-gray-300 rounded-md bg-white text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-w-[120px] shadow-sm text-gray-700">
+                <option>Tin học</option>
+                <option>Toán</option>
+                <option>Tiếng Việt</option>
+                <option>Đạo đức</option>
               </select>
             </div>
           </div>
