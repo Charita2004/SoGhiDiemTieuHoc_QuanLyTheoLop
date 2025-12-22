@@ -32,18 +32,19 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed, activePa
   return (
     <>
       <div 
-        className={`fixed inset-y-0 left-0 z-50 w-72 bg-[#0b1121] text-white shadow-2xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${isCollapsed ? '-translate-x-full' : 'translate-x-0'}`}
+        className={`fixed inset-y-0 left-0 z-50 bg-[#0b1121] text-white shadow-2xl transform transition-transform duration-300 ease-in-out w-full sm:w-72 ${isCollapsed ? '-translate-x-full' : 'translate-x-0'}`}
       >
-        {/* Mobile Close Button */}
+        {/* Close Button - Always visible when sidebar is open, especially important on mobile full screen */}
         <button 
           onClick={() => setIsCollapsed(true)} 
-          className="lg:hidden absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+          className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors z-[60] p-2"
+          aria-label="Đóng menu"
         >
-          <X size={24} />
+          <X size={28} />
         </button>
 
         {/* Logo Section */}
-        <div className="flex flex-col items-center justify-center pt-8 pb-6">
+        <div className="flex flex-col items-center justify-center pt-10 pb-6 relative z-10">
           <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center border-4 border-[#1e2538] shadow-lg mb-2 relative overflow-hidden group">
             <div className="text-center">
                <div className="flex flex-col items-center">
@@ -58,7 +59,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed, activePa
         </div>
         
         {/* Navigation Menu */}
-        <nav className="px-3 space-y-6 overflow-y-auto max-h-[calc(100vh-160px)] custom-scrollbar">
+        <nav className="px-3 space-y-6 overflow-y-auto max-h-[calc(100vh-180px)] custom-scrollbar relative z-10">
           {menuGroups.map((group, groupIndex) => (
             <div key={groupIndex}>
               {/* Group Title - Bold, White, Bigger */}
@@ -71,7 +72,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed, activePa
                 {group.items.map((item) => (
                   <button
                     key={item.id}
-                    onClick={() => setActivePage(item.id)}
+                    onClick={() => {
+                        setActivePage(item.id);
+                        // Auto close on mobile after selection
+                        if (window.innerWidth < 1024) setIsCollapsed(true);
+                    }}
                     className={`w-full flex items-center text-left pl-14 pr-4 py-3 rounded-lg transition-all duration-200 text-sm font-medium leading-5 ${
                       activePage === item.id 
                         ? 'bg-white/10 text-white font-semibold shadow-inner' 
@@ -87,7 +92,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed, activePa
         </nav>
       </div>
 
-      {/* Overlay for mobile */}
+      {/* Overlay for mobile - only show when not collapsed (open) and on smaller screens */}
       {!isCollapsed && (
         <div 
           className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm z-40 lg:hidden transition-opacity"

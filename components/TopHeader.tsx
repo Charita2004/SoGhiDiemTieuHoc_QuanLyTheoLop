@@ -12,13 +12,13 @@ const TopHeader: React.FC<TopHeaderProps> = ({ toggleSidebar }) => {
         <div className="flex items-center gap-4">
           <button 
             onClick={toggleSidebar}
-            className="lg:hidden text-gray-600 hover:text-gray-900 hover:bg-gray-100 p-2 rounded-lg transition-colors"
+            className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 p-2 rounded-lg transition-colors"
           >
             <Menu size={24} />
           </button>
           <div className="flex items-center gap-2 text-gray-700">
-            <Menu size={20} />
-            <span className="font-semibold">Sổ ghi điểm</span>
+            <span className="font-semibold text-lg hidden sm:block">Sổ ghi điểm</span>
+            <span className="font-semibold text-lg sm:hidden">Sổ điểm</span>
           </div>
         </div>
 

@@ -1,8 +1,22 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { STUDENTS_DATA } from '../constants';
-import { CloudUpload, FileSpreadsheet } from 'lucide-react';
+import { Student } from '../types';
+import { CloudUpload, Printer, FileSpreadsheet } from 'lucide-react';
+import ReportPreviewModal from './ReportPreviewModal';
+import StudentPrintSelectModal from './StudentPrintSelectModal';
 
-const PeriodicReviewTable: React.FC = () => {
+interface PeriodicReviewTableProps {
+  selectedClass?: string;
+}
+
+const PeriodicReviewTable: React.FC<PeriodicReviewTableProps> = ({ selectedClass = '1A2' }) => {
+  const [term, setTerm] = useState('Cuối năm');
+  const [isPrintSelectOpen, setIsPrintSelectOpen] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [selectedStudents, setSelectedStudents] = useState<Student[]>([]);
+
+  const filteredStudents = STUDENTS_DATA.filter(s => s.className === selectedClass);
+
   const groups = [
     { title: 'Môn học và hoạt động giáo dục', color: 'bg-[#00609c]' },
     { title: 'Nhận xét năng lực chung', color: 'bg-[#00609c]' },
@@ -10,13 +24,20 @@ const PeriodicReviewTable: React.FC = () => {
     { title: 'Nhận xét phẩm chất chủ yếu', color: 'bg-[#00609c]' },
   ];
 
+  const handleConfirmStudents = (students: Student[]) => {
+    if (students.length > 0) {
+      setSelectedStudents(students);
+      setIsPrintSelectOpen(false);
+      setIsPreviewOpen(true);
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
       {/* Filters and Actions Section */}
       <div className="flex flex-col gap-5 mb-2 shrink-0">
-        {/* ROW 1: Filters (Left) */}
+        {/* ROW 1: Filters */}
         <div className="flex flex-wrap items-end justify-between gap-4">
-          {/* Filters Group */}
           <div className="flex flex-wrap gap-4">
             <div className="flex flex-col gap-1.5">
               <label className="text-[14px] font-medium text-[#1f2937]">Năm học</label>
@@ -37,10 +58,9 @@ const PeriodicReviewTable: React.FC = () => {
             </div>
             <div className="flex flex-col gap-1.5">
               <label className="text-[14px] font-medium text-[#1f2937]">Lớp</label>
-              <select className="px-3 py-2 border border-gray-300 rounded-md bg-white text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 w-[100px] shadow-sm text-gray-700">
-                <option>1A2</option>
-                <option>1A3</option>
-                <option>1A4</option>
+              <select className="px-3 py-2 border border-gray-300 rounded-md bg-white text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 w-[100px] shadow-sm text-gray-700" value={selectedClass} disabled>
+                <option value="1A2">1A2</option>
+                <option value="5A2">5A2</option>
               </select>
             </div>
             <div className="flex flex-col gap-1.5">
@@ -54,10 +74,15 @@ const PeriodicReviewTable: React.FC = () => {
             </div>
               <div className="flex flex-col gap-1.5">
               <label className="text-[14px] font-medium text-[#1f2937]">Học kỳ</label>
-              <select className="px-3 py-2 border border-gray-300 rounded-md bg-white text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 w-[140px] shadow-sm text-gray-700">
-                <option>Học kỳ 1</option>
-                <option>Học kỳ 2</option>
-
+              <select 
+                  className="px-3 py-2 border border-gray-300 rounded-md bg-white text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 w-[140px] shadow-sm text-gray-700"
+                  value={term}
+                  onChange={(e) => setTerm(e.target.value)}
+              >
+                <option>Giữa kỳ 1</option>
+                <option>Cuối kỳ 1</option>
+                <option>Giữa kỳ 2</option>
+                <option>Cuối năm</option>
               </select>
             </div>
             <div className="flex flex-col gap-1.5">
@@ -71,9 +96,6 @@ const PeriodicReviewTable: React.FC = () => {
                 <option>12/2025</option>
               </select>
             </div>
-
-            {/* Split Filters: Class and Subject */}
-            
           </div>
         </div>
 
@@ -93,9 +115,8 @@ const PeriodicReviewTable: React.FC = () => {
 
         {/* ROW 3: Action Buttons & Stats */}
         <div className="flex flex-col md:flex-row justify-between items-end border-b border-gray-200 pb-3">
-          {/* Stats */}
           <div className="mb-2 md:mb-0">
-             <div className="font-bold text-gray-800 text-sm">Số học sinh: {STUDENTS_DATA.length}</div>
+             <div className="font-bold text-gray-800 text-sm">Số học sinh: {filteredStudents.length}</div>
              <div className="text-red-500 text-xs mt-1 italic">
                 ( Thầy Cô nhập Nội dung nhận xét vào các cột tương ứng )
              </div>
@@ -104,9 +125,14 @@ const PeriodicReviewTable: React.FC = () => {
           {/* Action Buttons */}
           <div className="flex gap-2">
             <button 
-                className="flex items-center gap-2 px-4 py-2 bg-white text-[#16a34a] border border-[#16a34a] rounded hover:bg-green-50 transition-all shadow-sm text-sm font-medium"
+              onClick={() => setIsPrintSelectOpen(true)}
+              className="flex items-center gap-2 px-3 py-2 bg-white text-gray-700 border border-gray-300 rounded hover:bg-gray-50 transition-colors text-sm shadow-sm whitespace-nowrap font-medium"
             >
-                <FileSpreadsheet size={18} />
+                <Printer size={18} className="text-blue-600" />
+                <span><span className="text-red-600">In</span> phiếu điểm</span>
+            </button>
+            <button className="flex items-center gap-2 px-3 py-2 bg-white text-gray-700 border border-gray-300 rounded hover:bg-gray-50 transition-colors text-sm shadow-sm whitespace-nowrap font-medium">
+                <FileSpreadsheet size={18} className="text-green-600" />
                 <span>Xuất Excel</span>
             </button>
             <button className="px-6 py-2 bg-[#6366f1] text-white rounded font-medium hover:bg-indigo-600 transition-colors text-sm shadow-sm whitespace-nowrap">
@@ -121,7 +147,6 @@ const PeriodicReviewTable: React.FC = () => {
         <div className="overflow-auto custom-scrollbar flex-1 pb-40">
           <table className="w-full min-w-max border-separate border-spacing-0">
             <thead className="sticky top-0 z-20 shadow-md">
-              {/* Row 1: Main Headers */}
               <tr>
                 <th rowSpan={2} className="px-4 py-3 text-center text-xs font-bold text-white uppercase tracking-wider sticky left-0 z-30 border-r border-b border-white/20 bg-[#00609c]">
                   STT
@@ -138,7 +163,6 @@ const PeriodicReviewTable: React.FC = () => {
                   </th>
                 ))}
               </tr>
-              {/* Row 2: Sub Headers (Nội dung) */}
               <tr>
                 {groups.map((_, index) => (
                   <React.Fragment key={index}>
@@ -150,8 +174,8 @@ const PeriodicReviewTable: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {STUDENTS_DATA.map((student) => (
-                <tr key={student.stt} className="hover:bg-blue-50/30 transition-colors group">
+              {filteredStudents.map((student) => (
+                <tr key={student.id} className="hover:bg-blue-50/30 transition-colors group">
                   <td className="px-2 py-3 text-center text-sm font-medium text-gray-900 sticky left-0 bg-white group-hover:bg-blue-50/30 transition-colors z-10 border-r border-gray-300">
                     {student.stt}
                   </td>
@@ -161,8 +185,6 @@ const PeriodicReviewTable: React.FC = () => {
                   <td className="px-4 py-3 text-center text-sm text-gray-700 border-r border-gray-300">
                     {student.dob}
                   </td>
-                  
-                  {/* Render standard textarea for each group instead of CommentInput */}
                   {groups.map((_, index) => (
                     <React.Fragment key={index}>
                       <td className="px-2 py-2 border-r border-gray-300 align-top bg-white group-hover:bg-blue-50/30 p-2">
@@ -179,6 +201,24 @@ const PeriodicReviewTable: React.FC = () => {
           </table>
         </div>
       </div>
+
+      {/* Selection Modal */}
+      <StudentPrintSelectModal 
+        isOpen={isPrintSelectOpen}
+        onClose={() => setIsPrintSelectOpen(false)}
+        selectedClass={selectedClass}
+        onConfirm={handleConfirmStudents}
+        term={term}
+        onTermChange={setTerm}
+      />
+
+      {/* Preview Modal */}
+       <ReportPreviewModal 
+          isOpen={isPreviewOpen} 
+          onClose={() => setIsPreviewOpen(false)} 
+          selectedStudents={selectedStudents}
+          currentTerm={term}
+       />
     </div>
   );
 };

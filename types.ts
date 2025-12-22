@@ -6,8 +6,9 @@ export interface Student {
   stt: number;
   id: string;
   name: string;
+  className: string;
   dob?: string; // Date of birth
-  parent: string; // 'T' represents 'Thường xuyên' or similar status, used for rendering
+  parent: string; // 'T' represents 'Thường xuyên' or similar status
   status: string;
 }
 
