@@ -176,12 +176,17 @@ const FilterBar: React.FC<FilterBarProps> = ({
           onClose={() => setIsPrintSelectOpen(false)}
           selectedClass={selectedClass}
           onConfirm={handleConfirmStudents}
+          term={term}
+          onTermChange={setTerm}
        />
 
        {/* Preview Modal */}
        <ReportPreviewModal 
           isOpen={isPreviewOpen} 
-          onClose={() => setIsPreviewOpen(false)} 
+          onClose={() => {
+            setIsPreviewOpen(false);
+            setIsPrintSelectOpen(true);
+          }} 
           selectedStudents={selectedStudents}
           currentTerm={term}
        />

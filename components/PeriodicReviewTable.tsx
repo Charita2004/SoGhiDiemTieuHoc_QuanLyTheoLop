@@ -1,9 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { STUDENTS_DATA } from '../constants';
 import { Student } from '../types';
-import { CloudUpload, Printer, FileSpreadsheet } from 'lucide-react';
-import ReportPreviewModal from './ReportPreviewModal';
-import StudentPrintSelectModal from './StudentPrintSelectModal';
+import { CloudUpload, FileSpreadsheet } from 'lucide-react';
 
 interface PeriodicReviewTableProps {
   selectedClass?: string;
@@ -11,9 +9,6 @@ interface PeriodicReviewTableProps {
 
 const PeriodicReviewTable: React.FC<PeriodicReviewTableProps> = ({ selectedClass = '1A2' }) => {
   const [term, setTerm] = useState('Cuối năm');
-  const [isPrintSelectOpen, setIsPrintSelectOpen] = useState(false);
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const [selectedStudents, setSelectedStudents] = useState<Student[]>([]);
 
   const filteredStudents = STUDENTS_DATA.filter(s => s.className === selectedClass);
 
@@ -23,14 +18,6 @@ const PeriodicReviewTable: React.FC<PeriodicReviewTableProps> = ({ selectedClass
     { title: 'Nhận xét năng lực đặc thù', color: 'bg-[#00609c]' },
     { title: 'Nhận xét phẩm chất chủ yếu', color: 'bg-[#00609c]' },
   ];
-
-  const handleConfirmStudents = (students: Student[]) => {
-    if (students.length > 0) {
-      setSelectedStudents(students);
-      setIsPrintSelectOpen(false);
-      setIsPreviewOpen(true);
-    }
-  };
 
   return (
     <div className="flex flex-col h-full">
@@ -124,13 +111,6 @@ const PeriodicReviewTable: React.FC<PeriodicReviewTableProps> = ({ selectedClass
 
           {/* Action Buttons */}
           <div className="flex gap-2">
-            <button 
-              onClick={() => setIsPrintSelectOpen(true)}
-              className="flex items-center gap-2 px-3 py-2 bg-white text-gray-700 border border-gray-300 rounded hover:bg-gray-50 transition-colors text-sm shadow-sm whitespace-nowrap font-medium"
-            >
-                <Printer size={18} className="text-blue-600" />
-                <span><span className="text-red-600">In</span> phiếu điểm</span>
-            </button>
             <button className="flex items-center gap-2 px-3 py-2 bg-white text-gray-700 border border-gray-300 rounded hover:bg-gray-50 transition-colors text-sm shadow-sm whitespace-nowrap font-medium">
                 <FileSpreadsheet size={18} className="text-green-600" />
                 <span>Xuất Excel</span>
@@ -201,24 +181,6 @@ const PeriodicReviewTable: React.FC<PeriodicReviewTableProps> = ({ selectedClass
           </table>
         </div>
       </div>
-
-      {/* Selection Modal */}
-      <StudentPrintSelectModal 
-        isOpen={isPrintSelectOpen}
-        onClose={() => setIsPrintSelectOpen(false)}
-        selectedClass={selectedClass}
-        onConfirm={handleConfirmStudents}
-        term={term}
-        onTermChange={setTerm}
-      />
-
-      {/* Preview Modal */}
-       <ReportPreviewModal 
-          isOpen={isPreviewOpen} 
-          onClose={() => setIsPreviewOpen(false)} 
-          selectedStudents={selectedStudents}
-          currentTerm={term}
-       />
     </div>
   );
 };

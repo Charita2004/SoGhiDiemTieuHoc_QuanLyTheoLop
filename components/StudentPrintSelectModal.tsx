@@ -105,8 +105,6 @@ const StudentPrintSelectModal: React.FC<StudentPrintSelectModalProps> = ({
              </div>
           </div>
 
-          <p className="text-xs text-gray-500 italic mb-4">Lưu ý: Có thể in tối đa 10 học sinh cùng lúc.</p>
-
           {/* Action Row Above Table */}
           <div className="flex justify-end items-center gap-4 mb-4">
             <div className="flex items-center gap-2 text-sm text-gray-700">
