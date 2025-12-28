@@ -7,6 +7,7 @@ interface GradeTableProps {
   viewFilter: ViewFilter;
   term: string;
   selectedClass: string;
+  isLocked?: boolean;
 }
 
 interface ColumnDef {
@@ -16,7 +17,7 @@ interface ColumnDef {
   isComment?: boolean;
 }
 
-const GradeTable: React.FC<GradeTableProps> = ({ viewFilter, term, selectedClass }) => {
+const GradeTable: React.FC<GradeTableProps> = ({ viewFilter, term, selectedClass, isLocked = false }) => {
   const filteredStudents = STUDENTS_DATA.filter(s => s.className === selectedClass);
   const classSubjects = SUBJECTS_BY_CLASS[selectedClass] || SUBJECTS_BY_CLASS['1A2'];
 
@@ -100,7 +101,7 @@ const GradeTable: React.FC<GradeTableProps> = ({ viewFilter, term, selectedClass
   };
 
   const RewardCell = () => (
-    <div className="w-[120px] h-[60px] border border-gray-300 rounded mx-auto p-1 flex flex-col justify-between bg-white cursor-pointer hover:border-blue-400 transition-colors">
+    <div className={`w-[120px] h-[60px] border border-gray-300 rounded mx-auto p-1 flex flex-col justify-between bg-white ${isLocked ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:border-blue-400 transition-colors'}`}>
       <div className="text-gray-400 text-xs text-center mt-1">Bấm vào đây</div>
       <div className="text-gray-400 text-[10px] text-right">0 / 200</div>
     </div>
@@ -119,7 +120,7 @@ const GradeTable: React.FC<GradeTableProps> = ({ viewFilter, term, selectedClass
         <table className="w-full min-w-max border-separate border-spacing-0">
           <thead className="bg-white sticky top-0 z-20">
             <tr className="border-b border-gray-300">
-              <th rowSpan={3} className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider sticky left-0 bg-white z-20 border-r border-b border-gray-300">STT</th>
+              <th rowSpan={3} className="px-4 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider sticky left-0 bg-white z-20 border-r border-b border-gray-300 align-middle">STT</th>
               <th rowSpan={3} className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider sticky left-[50px] bg-white z-20 border-r border-b border-gray-300">Mã HS</th>
               <th rowSpan={3} className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider sticky left-[150px] bg-white z-20 min-w-[180px] border-r border-b border-gray-300 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] z-30">Họ và tên</th>
               
@@ -297,18 +298,18 @@ const GradeTable: React.FC<GradeTableProps> = ({ viewFilter, term, selectedClass
 
                     return (
                       <React.Fragment key={`body-split-${idx}`}>
-                        <td className="px-1 py-3 text-center text-sm font-medium text-gray-700 border-r border-gray-300 align-middle">
-                          <span className="inline-flex items-center justify-center w-7 h-7 rounded border border-gray-200 bg-gray-50">{randomLevel}</span>
+                        <td className={`px-1 py-3 text-center text-sm font-medium text-gray-700 border-r border-gray-300 align-middle ${isLocked ? 'bg-gray-50' : ''}`}>
+                          <span className={`inline-flex items-center justify-center w-7 h-7 rounded border border-gray-200 ${isLocked ? 'bg-gray-200 text-gray-500' : 'bg-gray-50'}`}>{randomLevel}</span>
                         </td>
-                        <td className="px-1 py-3 text-center text-sm font-bold text-blue-600 border-r border-gray-300 align-middle">
+                        <td className={`px-1 py-3 text-center text-sm font-bold border-r border-gray-300 align-middle ${isLocked ? 'text-gray-500 bg-gray-50' : 'text-blue-600'}`}>
                           {randomScore}
                         </td>
                       </React.Fragment>
                     );
                   } else {
                     return (
-                      <td key={`body-normal-${idx}`} className="px-2 py-3 text-center text-sm font-medium text-gray-700 border-r border-gray-300 align-middle">
-                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gray-50 border border-gray-200">
+                      <td key={`body-normal-${idx}`} className={`px-2 py-3 text-center text-sm font-medium text-gray-700 border-r border-gray-300 align-middle ${isLocked ? 'bg-gray-50' : ''}`}>
+                        <span className={`inline-flex items-center justify-center w-8 h-8 rounded-lg border border-gray-200 ${isLocked ? 'bg-gray-200 text-gray-500' : 'bg-gray-50'}`}>
                           {student.parent === 'T' ? 'T' : 'H'}
                         </span>
                       </td>
@@ -318,11 +319,11 @@ const GradeTable: React.FC<GradeTableProps> = ({ viewFilter, term, selectedClass
 
                 {/* Qualities & Skills mapping in 'all' view */}
                 {viewFilter === 'all' && currentColumns.slice(subjectCount).map((col, idx) => (
-                  <td key={`all-view-extra-${idx}`} className={`px-2 py-3 text-center text-sm font-medium text-gray-700 border-r border-gray-300 ${col.isComment ? 'align-top' : 'align-middle'}`}>
+                  <td key={`all-view-extra-${idx}`} className={`px-2 py-3 text-center text-sm font-medium text-gray-700 border-r border-gray-300 ${col.isComment ? 'align-top' : 'align-middle'} ${isLocked ? 'bg-gray-50' : ''}`}>
                       {col.isComment ? (
-                        <CommentInput placeholder="Nhận xét..." />
+                        <CommentInput placeholder="Nhận xét..." readOnly={isLocked} />
                       ) : (
-                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gray-50 border border-gray-200">
+                        <span className={`inline-flex items-center justify-center w-8 h-8 rounded-lg border border-gray-200 ${isLocked ? 'bg-gray-200 text-gray-500' : 'bg-gray-50'}`}>
                           Đ
                         </span>
                       )}
@@ -331,11 +332,11 @@ const GradeTable: React.FC<GradeTableProps> = ({ viewFilter, term, selectedClass
 
                 {/* Qualities or Skills mapping in specific views */}
                 {(viewFilter === 'qualities' || viewFilter === 'skills') && currentColumns.map((col, idx) => (
-                   <td key={`spec-view-cell-${idx}`} className={`px-2 py-3 text-center text-sm font-medium text-gray-700 border-r border-gray-300 ${col.isComment ? 'align-top' : 'align-middle'}`}>
+                   <td key={`spec-view-cell-${idx}`} className={`px-2 py-3 text-center text-sm font-medium text-gray-700 border-r border-gray-300 ${col.isComment ? 'align-top' : 'align-middle'} ${isLocked ? 'bg-gray-50' : ''}`}>
                       {col.isComment ? (
-                        <CommentInput placeholder="Nhận xét..." />
+                        <CommentInput placeholder="Nhận xét..." readOnly={isLocked} />
                       ) : (
-                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gray-50 border border-gray-200">
+                        <span className={`inline-flex items-center justify-center w-8 h-8 rounded-lg border border-gray-200 ${isLocked ? 'bg-gray-200 text-gray-500' : 'bg-gray-50'}`}>
                           Đ
                         </span>
                       )}
@@ -344,22 +345,23 @@ const GradeTable: React.FC<GradeTableProps> = ({ viewFilter, term, selectedClass
 
                 {isEndOfYearAll && (
                   <>
-                    <td className="px-2 py-3 text-center border-r border-gray-300 align-middle">
-                      <span className="text-red-500 font-bold text-sm">
+                    <td className={`px-2 py-3 text-center border-r border-gray-300 align-middle ${isLocked ? 'bg-gray-50' : ''}`}>
+                      <span className={`font-bold text-sm ${isLocked ? 'text-gray-400' : 'text-red-500'}`}>
                         {['X', 'T', 'H', 'C', 'H'][studentIndex % 5]}
                       </span>
                     </td>
-                    <td className="px-2 py-3 text-center border-r border-gray-300 align-middle">
+                    <td className={`px-2 py-3 text-center border-r border-gray-300 align-middle ${isLocked ? 'bg-gray-50' : ''}`}>
                       <RewardCell />
                     </td>
-                    <td className="px-2 py-3 text-center border-r border-gray-300 align-middle">
+                    <td className={`px-2 py-3 text-center border-r border-gray-300 align-middle ${isLocked ? 'bg-gray-50' : ''}`}>
                       <RewardCell />
                     </td>
-                    <td className="px-2 py-3 text-center border-r border-gray-300 align-middle">
+                    <td className={`px-2 py-3 text-center border-r border-gray-300 align-middle ${isLocked ? 'bg-gray-50' : ''}`}>
                       <div className="flex justify-center">
                          <input 
                             type="checkbox" 
-                            className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer" 
+                            disabled={isLocked}
+                            className={`w-5 h-5 rounded border-gray-300 focus:ring-blue-500 ${isLocked ? 'text-gray-400 cursor-not-allowed' : 'text-blue-600 cursor-pointer'}`} 
                           />
                       </div>
                     </td>
@@ -367,8 +369,8 @@ const GradeTable: React.FC<GradeTableProps> = ({ viewFilter, term, selectedClass
                 )}
 
                 {viewFilter !== 'skills' && (
-                  <td className="px-2 py-3 border-l border-gray-300 align-top">
-                    <CommentInput initialValue={student.status} placeholder="Nhập nhận xét..." />
+                  <td className={`px-2 py-3 border-l border-gray-300 align-top ${isLocked ? 'bg-gray-50' : ''}`}>
+                    <CommentInput initialValue={student.status} placeholder="Nhập nhận xét..." readOnly={isLocked} />
                   </td>
                 )}
               </tr>

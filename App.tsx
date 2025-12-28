@@ -14,6 +14,7 @@ const App: React.FC = () => {
   const [activePage, setActivePage] = useState<string>('class_manager');
   const [selectedClass, setSelectedClass] = useState<string>('1A2');
   const [isMounted, setIsMounted] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
 
   useEffect(() => {
     // On mount, check width. If desktop, open sidebar.
@@ -57,8 +58,15 @@ const App: React.FC = () => {
                 setTerm={setTerm}
                 selectedClass={selectedClass}
                 setSelectedClass={setSelectedClass}
+                isLocked={isLocked}
+                setIsLocked={setIsLocked}
               />
-              <GradeTable viewFilter={viewFilter} term={term} selectedClass={selectedClass} />
+              <GradeTable 
+                viewFilter={viewFilter} 
+                term={term} 
+                selectedClass={selectedClass} 
+                isLocked={isLocked}
+              />
             </>
           ) : activePage === 'periodic_review' ? (
              <PeriodicReviewTable selectedClass={selectedClass} />
