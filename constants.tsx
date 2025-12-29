@@ -32,6 +32,11 @@ export const STUDENTS_DATA: Student[] = [
     { stt: 3, id: '079219031964', name: 'Vương Quốc Bảo', className: '1A2', dob: '22/08/2017', parent: 'T', status: 'Cần nhanh dạn hơn.' },
     { stt: 4, id: '083319008170', name: 'Nguyễn Hồ Tâm Châu', className: '1A2', dob: '05/01/2018', parent: 'T', status: '' },
     { stt: 5, id: '060519000233', name: 'Nguyễn Thái Linh Đan', className: '1A2', dob: '12/12/2017', parent: 'T', status: '' },
+    { stt: 6, id: '079219004512', name: 'Lê Thị Mai Anh', className: '1A2', dob: '10/10/2017', parent: 'T', status: 'Chăm ngoan' },
+    { stt: 7, id: '079219009876', name: 'Phạm Đức Duy', className: '1A2', dob: '05/05/2017', parent: 'H', status: 'Cần tập trung hơn' },
+    { stt: 8, id: '079219003321', name: 'Trần Ngọc Hân', className: '1A2', dob: '12/08/2017', parent: 'T', status: '' },
+    { stt: 9, id: '079219007744', name: 'Nguyễn Văn Hùng', className: '1A2', dob: '20/02/2018', parent: 'T', status: 'Sôi nổi phát biểu' },
+    { stt: 10, id: '079219002255', name: 'Hoàng Thùy Linh', className: '1A2', dob: '01/11/2017', parent: 'T', status: '' },
     
     // Class 5A2
     { stt: 1, id: '123456789012', name: 'Trần Minh Quân', className: '5A2', dob: '10/05/2013', parent: 'T', status: 'Học tốt các môn.' },
@@ -39,4 +44,9 @@ export const STUDENTS_DATA: Student[] = [
     { stt: 3, id: '456789123456', name: 'Phạm Anh Khoa', className: '5A2', dob: '05/02/2013', parent: 'H', status: 'Cần cố gắng môn Toán.' },
     { stt: 4, id: '321654987321', name: 'Ngô Mỹ Linh', className: '5A2', dob: '18/07/2013', parent: 'T', status: 'Năng nổ tham gia hoạt động.' },
     { stt: 5, id: '789123456789', name: 'Vũ Quốc Khánh', className: '5A2', dob: '30/03/2013', parent: 'T', status: '' },
+    { stt: 6, id: '112233445566', name: 'Đặng Văn Nam', className: '5A2', dob: '15/06/2013', parent: 'T', status: 'Có tiến bộ' },
+    { stt: 7, id: '665544332211', name: 'Bùi Thị Lan', className: '5A2', dob: '28/09/2013', parent: 'T', status: '' },
+    { stt: 8, id: '998877665544', name: 'Đỗ Minh Triết', className: '5A2', dob: '02/01/2013', parent: 'H', status: 'Cần rèn chữ viết' },
+    { stt: 9, id: '445566778899', name: 'Hồ Thu Trang', className: '5A2', dob: '14/12/2013', parent: 'T', status: 'Học đều các môn' },
+    { stt: 10, id: '223344556677', name: 'Lý Gia Huy', className: '5A2', dob: '30/04/2013', parent: 'T', status: '' },
 ];
