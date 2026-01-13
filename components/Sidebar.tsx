@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, CalendarRange, CalendarDays } from 'lucide-react';
+import { X, CalendarRange, CalendarDays, Database } from 'lucide-react';
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -25,6 +25,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed, activePa
       icon: <CalendarDays size={20} />,
       items: [
         { id: 'periodic_review', label: 'Nhận xét đánh giá thường xuyên' },
+      ]
+    },
+    {
+      title: 'NGÂN HÀNG',
+      icon: <Database size={20} />,
+      items: [
+        { id: 'comment_bank', label: 'Ngân hàng nhận xét cá nhân' },
       ]
     }
   ];

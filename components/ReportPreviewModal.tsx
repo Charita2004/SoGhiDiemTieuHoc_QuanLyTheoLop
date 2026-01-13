@@ -1,5 +1,5 @@
-import React from 'react';
-import { X, Printer } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { X, Printer, CheckSquare, Square } from 'lucide-react';
 import { SUBJECTS_BY_CLASS, STUDENTS_DATA } from '../constants';
 import { Student } from '../types';
 
@@ -8,6 +8,7 @@ interface ReportPreviewModalProps {
   onClose: () => void;
   selectedStudents?: Student[];
   currentTerm?: string;
+  initialColumns?: string[];
 }
 
 const CORE_COMPETENCIES = [
@@ -24,18 +25,85 @@ const KEY_QUALITIES = [
   'Trách nhiệm'
 ];
 
+const COL_DEFINITIONS = [
+    { key: 'gk1', label: 'Giữa HK 1', bg: 'bg-gray-50' },
+    { key: 'ck1', label: 'Cuối HK 1', bg: 'bg-gray-100' },
+    { key: 'gk2', label: 'Giữa HK 2', bg: 'bg-gray-50' },
+    { key: 'cn', label: 'Cuối Năm', bg: 'bg-gray-100' },
+];
+
 const ReportPreviewModal: React.FC<ReportPreviewModalProps> = ({ 
   isOpen, 
   onClose, 
   selectedStudents = [], 
-  currentTerm = 'Cuối kỳ 1' 
+  currentTerm = 'Cuối kỳ 1',
+  initialColumns = []
 }) => {
+  // State to track which columns are selected for printing
+  const [selectedColKeys, setSelectedColKeys] = useState<string[]>([]);
+
+  // EFFECT: Apply Logic constraints based on currentTerm, but respect initialColumns if provided
+  useEffect(() => {
+    // If initialColumns are passed (from Select Modal), use them and skip default logic
+    if (initialColumns && initialColumns.length > 0) {
+        setSelectedColKeys(initialColumns);
+        return;
+    }
+
+    // Default Fallback Logic if no columns were passed
+    switch (currentTerm) {
+        case 'Giữa kỳ 1':
+            setSelectedColKeys(['gk1']);
+            break;
+        case 'Cuối kỳ 1':
+            setSelectedColKeys(['gk1', 'ck1']);
+            break;
+        case 'Giữa kỳ 2':
+            setSelectedColKeys(['gk2']);
+            break;
+        case 'Cuối năm':
+            setSelectedColKeys(['gk1', 'ck1', 'gk2', 'cn']);
+            break;
+        default:
+            setSelectedColKeys(['gk1', 'ck1']);
+    }
+  }, [currentTerm, initialColumns]);
+
+  // Determine if a checkbox should be disabled based on Term Logic
+  // Updated: When manual columns are passed, we allow more flexibility or just stick to basic rules
+  const isColDisabled = (key: string) => {
+      // If we have manual initial columns, we might want to allow full toggling inside the preview too
+      // But let's keep some semantic sense:
+      if (currentTerm === 'Giữa kỳ 1' && key !== 'gk1') return true; 
+      // For other terms, generally let user toggle if they want, or keep previous logic
+      return false;
+  };
+
+  const toggleColumn = (key: string) => {
+      // Allow user to toggle freely inside preview if they want to adjust
+      setSelectedColKeys(prev => {
+          if (prev.includes(key)) {
+              if (prev.length === 1) return prev; 
+              return prev.filter(k => k !== key);
+          } else {
+              const newKeys = [...prev, key];
+              return COL_DEFINITIONS
+                  .filter(def => newKeys.includes(def.key))
+                  .map(def => def.key);
+          }
+      });
+  };
+
+  // Derive active columns for rendering based on selection
+  const activeColumns = useMemo(() => {
+      return COL_DEFINITIONS.filter(col => selectedColKeys.includes(col.key));
+  }, [selectedColKeys]);
+
+
   if (!isOpen) return null;
 
   const displayStudents = selectedStudents.length > 0 ? selectedStudents : [STUDENTS_DATA[0]];
   const isYearEnd = currentTerm === 'Cuối năm';
-  const isMidTerm = currentTerm?.includes('Giữa');
-  const termSuffix = currentTerm?.includes('1') ? 'I' : 'II';
 
   const getSpecificCompetencies = (className: string) => {
     const basic = ['Ngôn ngữ', 'Tính toán', 'Khoa học', 'Thẩm mỹ', 'Thể chất'];
@@ -73,25 +141,17 @@ const ReportPreviewModal: React.FC<ReportPreviewModalProps> = ({
     const seed = `${student.id}-${subjName}`;
     const levels = ['T', 'H'];
     
-    const periods = [
-        { key: 'gk1', label: 'Giữa kỳ 1' },
-        { key: 'ck1', label: 'Cuối kỳ 1' },
-        { key: 'gk2', label: 'Giữa kỳ 2' },
-        { key: 'cn', label: 'Cuối năm' }
-    ];
-
+    // Generate full data regardless of view
     const data: any = {};
-    
-    periods.forEach((p, idx) => {
-        const hasScore = hasScoreForPeriod(student.className, subjName, p.label);
-        data[p.key] = {
+    COL_DEFINITIONS.forEach((col, idx) => {
+        const hasScore = hasScoreForPeriod(student.className, subjName, col.label);
+        data[col.key] = {
             m: levels[getDeterministicValue(seed, (idx + 1) * 10, 2)],
             d: hasScore ? (7 + getDeterministicValue(seed, (idx + 1) * 15, 30) / 10).toFixed(0) : ''
         };
     });
 
     data.kqgd = ['T', 'H'][getDeterministicValue(seed, 90, 2)];
-
     return data;
   };
 
@@ -164,11 +224,15 @@ const ReportPreviewModal: React.FC<ReportPreviewModalProps> = ({
     
     const subjects = classSubjects.map((name, idx) => {
       const grades = generateGradeData(student, name);
+      // Determine note from the LAST available column data or default to 'T' logic
+      const lastColKey = activeColumns.length > 0 ? activeColumns[activeColumns.length - 1].key : 'cn';
+      const lastGrade = grades[lastColKey]?.m || 'T';
+
       return {
         stt: idx + 1,
         name: name,
         ...grades, 
-        note: grades.cn.m === 'T' ? 'Nắm vững kiến thức.' : 'Hoàn thành yêu cầu.'
+        note: lastGrade === 'T' ? 'Nắm vững kiến thức.' : 'Hoàn thành yêu cầu.'
       };
     });
 
@@ -209,81 +273,72 @@ const ReportPreviewModal: React.FC<ReportPreviewModalProps> = ({
 
           <h3 className="font-bold text-sm mb-4 font-sans uppercase text-blue-800">I. Các môn học và hoạt động giáo dục</h3>
 
-          <table className="w-full border-collapse border border-gray-800 text-[12px] font-sans mb-6">
+          <table className="w-full border-collapse border border-gray-800 text-[12px] font-sans mb-6" style={{ tableLayout: 'fixed' }}>
+            <colgroup>
+                {/* 1. STT */}
+                <col style={{ width: '35px' }} />
+                {/* 2. Subject Name */}
+                <col style={{ width: '160px' }} />
+                {/* 3. Dynamic Score Columns (Fixed 32px each) */}
+                {activeColumns.map(col => (
+                    <React.Fragment key={col.key}>
+                        <col style={{ width: '32px' }} /> {/* Mức */}
+                        <col style={{ width: '32px' }} /> {/* Điểm */}
+                    </React.Fragment>
+                ))}
+                {/* 4. Comment Column (Auto expand) */}
+                <col style={{ width: 'auto' }} />
+            </colgroup>
             <thead>
               <tr className="bg-gray-100/50">
-                <th rowSpan={2} className="border border-gray-800 p-1 text-center w-8">STT</th>
-                <th rowSpan={2} className="border border-gray-800 p-1 text-left min-w-[120px]">Môn học và hoạt động giáo dục</th>
+                <th rowSpan={2} className="border border-gray-800 p-1 text-center">STT</th>
+                <th rowSpan={2} className="border border-gray-800 p-1 text-left">Môn học và hoạt động giáo dục</th>
                 
-                {isYearEnd ? (
-                    <>
-                        <th colSpan={2} className="border border-gray-800 p-1 text-center bg-gray-50">Giữa HK I</th>
-                        <th colSpan={2} className="border border-gray-800 p-1 text-center bg-gray-100">Cuối HK I</th>
-                        <th colSpan={2} className="border border-gray-800 p-1 text-center bg-gray-50">Giữa HK II</th>
-                        <th colSpan={2} className="border border-gray-800 p-1 text-center bg-gray-100">Cuối Năm</th>
-                    </>
-                ) : (
-                    <>
-                        <th colSpan={2} className="border border-gray-800 p-1 text-center bg-gray-100">Giữa học kỳ {termSuffix}</th>
-                        {!isMidTerm && <th colSpan={2} className="border border-gray-800 p-1 text-center bg-gray-100">Cuối học kỳ {termSuffix}</th>}
-                    </>
-                )}
+                {/* Dynamic Header Row 1: Periods */}
+                {activeColumns.map(col => (
+                    <th key={col.key} colSpan={2} className={`border border-gray-800 p-1 text-center ${col.bg}`}>
+                        {col.label}
+                    </th>
+                ))}
                 
-                <th rowSpan={2} className="border border-gray-800 p-1 text-center w-[35%]">Nhận xét</th>
+                <th rowSpan={2} className="border border-gray-800 p-1 text-center">Nhận xét</th>
               </tr>
               <tr className="bg-gray-100/50">
-                {isYearEnd ? (
-                    <>
-                        <th className="border border-gray-800 p-0.5 text-center text-[10px] w-8">Mức</th><th className="border border-gray-800 p-0.5 text-center text-[10px] w-8">Điểm</th>
-                        <th className="border border-gray-800 p-0.5 text-center text-[10px] w-8">Mức</th><th className="border border-gray-800 p-0.5 text-center text-[10px] w-8">Điểm</th>
-                        <th className="border border-gray-800 p-0.5 text-center text-[10px] w-8">Mức</th><th className="border border-gray-800 p-0.5 text-center text-[10px] w-8">Điểm</th>
-                        <th className="border border-gray-800 p-0.5 text-center text-[10px] w-8">Mức</th><th className="border border-gray-800 p-0.5 text-center text-[10px] w-8">Điểm</th>
-                    </>
-                ) : (
-                    <>
-                        <th className="border border-gray-800 p-1 text-center font-bold w-12 text-[11px]">Mức</th>
-                        <th className="border border-gray-800 p-1 text-center font-bold w-12 text-[11px]">Điểm</th>
-                        {!isMidTerm && (
-                            <>
-                            <th className="border border-gray-800 p-1 text-center font-bold w-12 text-[11px]">Mức</th>
-                            <th className="border border-gray-800 p-1 text-center font-bold w-12 text-[11px]">Điểm</th>
-                            </>
-                        )}
-                    </>
-                )}
+                 {/* Sub-columns for Mức/Điểm */}
+                 {activeColumns.map(col => (
+                    <React.Fragment key={`${col.key}-sub`}>
+                        <th className="border border-gray-800 px-0 py-0.5 text-center text-[10px]">Mức</th>
+                        <th className="border border-gray-800 px-0 py-0.5 text-center text-[10px]">Điểm</th>
+                    </React.Fragment>
+                 ))}
               </tr>
             </thead>
             <tbody>
               {subjects.map((sub) => {
-                  const cellClass = "border border-gray-800 p-1 text-center font-semibold text-[11px]";
-                  const scoreClass = "border border-gray-800 p-1 text-center font-bold text-blue-700 text-[11px]";
-                  
                   return (
                     <tr key={sub.stt} className="hover:bg-gray-50/50">
-                    <td className="border border-gray-800 p-1 text-center">{sub.stt}</td>
-                    <td className="border border-gray-800 p-1 font-medium">{sub.name}</td>
-                    
-                    {isYearEnd ? (
-                        <>
-                            <td className={cellClass}>{sub.gk1.m}</td><td className={scoreClass}>{sub.gk1.d}</td>
-                            <td className={`${cellClass} bg-gray-50`}>{sub.ck1.m}</td><td className={`${scoreClass} bg-gray-50`}>{sub.ck1.d}</td>
-                            <td className={cellClass}>{sub.gk2.m}</td><td className={scoreClass}>{sub.gk2.d}</td>
-                            <td className={`${cellClass} bg-blue-50`}>{sub.cn.m}</td><td className={`${scoreClass} bg-blue-50`}>{sub.cn.d}</td>
-                        </>
-                    ) : (
-                        <>
-                           <td className={cellClass}>{sub.ck1.m}</td>
-                           <td className={scoreClass}>{sub.ck1.d}</td>
-                           {!isMidTerm && (
-                               <>
-                               <td className={cellClass}>{sub.cn.m}</td>
-                               <td className={scoreClass}>{sub.cn.d}</td>
-                               </>
-                           )}
-                        </>
-                    )}
+                        <td className="border border-gray-800 p-1 text-center">{sub.stt}</td>
+                        <td className="border border-gray-800 p-1 font-medium truncate text-left px-2">{sub.name}</td>
+                        
+                        {/* Dynamic Body Cells */}
+                        {activeColumns.map(col => {
+                            const data = (sub as any)[col.key]; // Access dynamic key like sub.gk1
+                            return (
+                                <React.Fragment key={`${col.key}-${sub.stt}`}>
+                                    <td className={`border border-gray-800 p-0 text-center font-semibold text-[11px] align-middle overflow-hidden ${col.bg}`}>
+                                        {data?.m}
+                                    </td>
+                                    <td className={`border border-gray-800 p-0 text-center font-bold text-blue-700 text-[11px] align-middle overflow-hidden ${col.bg}`}>
+                                        {data?.d}
+                                    </td>
+                                </React.Fragment>
+                            );
+                        })}
 
-                    <td className="border border-gray-800 p-1 text-[11px] align-middle italic text-gray-700 leading-tight">{sub.note}</td>
+                        {/* Comment Cell */}
+                        <td className="border border-gray-800 p-1 pl-[10px] text-[11px] align-middle italic text-gray-700 leading-tight text-left break-words whitespace-normal">
+                            {sub.note}
+                        </td>
                     </tr>
                   )
               })}
@@ -298,43 +353,34 @@ const ReportPreviewModal: React.FC<ReportPreviewModalProps> = ({
           <div className="mb-4 font-sans print:break-before-page">
              <h3 className="font-bold text-sm mb-3 uppercase text-blue-800 pt-4 print:pt-8">II. Đánh giá phẩm chất và năng lực</h3>
              
-             <table className="w-full border-collapse border border-gray-800 text-[12px] font-sans">
+             <table className="w-full border-collapse border border-gray-800 text-[12px] font-sans table-fixed">
+              <colgroup>
+                  <col style={{ width: '35px' }} /> {/* STT */}
+                  <col style={{ width: '80px' }} /> {/* Group */}
+                  <col style={{ width: '160px' }} /> {/* Criteria */}
+                  {activeColumns.map(col => (
+                      <col key={col.key} style={{ width: '32px' }} /> // 1 col per period (Mức only)
+                  ))}
+                  <col style={{ width: 'auto' }} /> {/* Comment */}
+              </colgroup>
               <thead>
                 <tr className="bg-gray-100/50">
-                  <th rowSpan={2} className="border border-gray-800 p-1 text-center w-8">STT</th>
-                  <th rowSpan={2} className="border border-gray-800 p-1 text-center w-32">Nhóm năng lực</th>
+                  <th rowSpan={2} className="border border-gray-800 p-1 text-center">STT</th>
+                  <th rowSpan={2} className="border border-gray-800 p-1 text-center">Nhóm năng lực</th>
                   <th rowSpan={2} className="border border-gray-800 p-1 text-left">Tiêu chí đánh giá</th>
                   
-                  {isYearEnd ? (
-                       <>
-                        <th className="border border-gray-800 p-1 text-center bg-gray-50 w-14">Giữa HK I</th>
-                        <th className="border border-gray-800 p-1 text-center bg-gray-100 w-14">Cuối HK I</th>
-                        <th className="border border-gray-800 p-1 text-center bg-gray-50 w-14">Giữa HK II</th>
-                        <th className="border border-gray-800 p-1 text-center bg-gray-100 w-14">Cuối Năm</th>
-                       </>
-                  ) : (
-                       <>
-                        <th className="border border-gray-800 p-1 text-center bg-gray-100 w-24">Giữa HK {termSuffix}</th>
-                        {!isMidTerm && <th className="border border-gray-800 p-1 text-center bg-gray-100 w-24">Cuối HK {termSuffix}</th>}
-                       </>
-                  )}
+                  {activeColumns.map(col => (
+                      <th key={col.key} className={`border border-gray-800 p-1 text-center ${col.bg}`}>
+                          {col.label}
+                      </th>
+                  ))}
                   
-                  <th rowSpan={2} className="border border-gray-800 p-1 text-center w-auto">Nhận xét</th>
+                  <th rowSpan={2} className="border border-gray-800 p-1 text-center">Nhận xét</th>
                 </tr>
                 <tr className="bg-gray-100/50">
-                  {isYearEnd ? (
-                     <>
-                        <th className="border border-gray-800 p-1 text-center font-bold text-[10px]">Mức</th>
-                        <th className="border border-gray-800 p-1 text-center font-bold text-[10px]">Mức</th>
-                        <th className="border border-gray-800 p-1 text-center font-bold text-[10px]">Mức</th>
-                        <th className="border border-gray-800 p-1 text-center font-bold text-[10px]">Mức</th>
-                     </>
-                  ) : (
-                     <>
-                        <th className="border border-gray-800 p-1 text-center font-bold text-[10px]">Mức</th>
-                        {(!isMidTerm) && <th className="border border-gray-800 p-1 text-center font-bold text-[10px]">Mức</th>}
-                     </>
-                  )}
+                  {activeColumns.map(col => (
+                      <th key={`${col.key}-sub`} className="border border-gray-800 px-0 py-0.5 text-center font-bold text-[10px]">Mức</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
@@ -342,7 +388,7 @@ const ReportPreviewModal: React.FC<ReportPreviewModalProps> = ({
                      const groupComment = getGroupComment(student, group.title);
                      
                      return group.items.map((item, itemIdx) => {
-                        const scores = generateCompetencyData(student, item);
+                        const scores: any = generateCompetencyData(student, item); 
                         const isFirst = itemIdx === 0;
                         const rowSpan = group.items.length;
 
@@ -352,31 +398,23 @@ const ReportPreviewModal: React.FC<ReportPreviewModalProps> = ({
                                     <>
                                         <td rowSpan={rowSpan} className="border border-gray-800 p-1 text-center align-middle font-bold">{group.startIdx}</td>
                                         <td rowSpan={rowSpan} className="border border-gray-800 p-2 align-middle">
-                                            <div className="font-bold uppercase text-[11px] text-blue-800">{group.title}</div>
+                                            <div className="font-bold uppercase text-[10px] text-blue-800">{group.title}</div>
                                         </td>
                                     </>
                                 )}
                                 
-                                <td className="border border-gray-800 p-1 align-middle pl-2 text-[11px]">
+                                <td className="border border-gray-800 p-1 align-middle pl-2 text-[11px] text-left">
                                    - {item}
                                 </td>
                                 
-                                {isYearEnd ? (
-                                    <>
-                                       <td className="border border-gray-800 p-1 text-center align-middle bg-gray-50 text-[11px] font-semibold">{scores.gk1}</td>
-                                       <td className="border border-gray-800 p-1 text-center align-middle text-[11px] font-semibold">{scores.ck1}</td>
-                                       <td className="border border-gray-800 p-1 text-center align-middle bg-gray-50 text-[11px] font-semibold">{scores.gk2}</td>
-                                       <td className="border border-gray-800 p-1 text-center align-middle text-[11px] font-semibold">{scores.cn}</td>
-                                    </>
-                                ) : (
-                                    <>
-                                       <td className="border border-gray-800 p-1 text-center align-middle text-[11px] font-semibold">{isMidTerm ? scores.gk1 : scores.ck1}</td>
-                                       {!isMidTerm && <td className="border border-gray-800 p-1 text-center align-middle text-[11px] font-semibold">{scores.cn}</td>}
-                                    </>
-                                )}
+                                {activeColumns.map(col => (
+                                    <td key={col.key} className={`border border-gray-800 p-0 text-center align-middle text-[11px] font-semibold ${col.bg}`}>
+                                        {scores[col.key]}
+                                    </td>
+                                ))}
                                 
                                 {isFirst && (
-                                    <td rowSpan={rowSpan} className="border border-gray-800 p-1 text-[11px] italic text-gray-700 align-middle text-left px-2">
+                                    <td rowSpan={rowSpan} className="border border-gray-800 p-1 pl-[10px] text-[11px] italic text-gray-700 align-middle text-left break-words whitespace-normal">
                                         {groupComment}
                                     </td>
                                 )}
@@ -442,7 +480,34 @@ const ReportPreviewModal: React.FC<ReportPreviewModalProps> = ({
   return (
     <div className="fixed inset-0 z-[9999] flex flex-col bg-gray-500/40 backdrop-blur-sm overflow-hidden animate-in fade-in duration-200">
       <div className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between shadow-md sticky top-0 z-10 print:hidden">
-        <h2 className="text-gray-800 font-bold text-lg">Xem trước {displayStudents.length} Phiếu điểm - {currentTerm}</h2>
+        <div className="flex flex-col gap-1">
+            <h2 className="text-gray-800 font-bold text-lg">Xem trước {displayStudents.length} Phiếu điểm - <span className="text-blue-600">{currentTerm}</span></h2>
+            
+            {/* COLUMN CONFIGURATION CHECKBOXES */}
+            <div className="flex items-center gap-4 text-sm mt-1">
+                <span className="font-semibold text-gray-600 text-xs uppercase tracking-wide">Cấu hình cột in:</span>
+                {COL_DEFINITIONS.map(col => {
+                    // In Preview mode, we don't disable based on strict rules anymore, allowing user flexibility
+                    const isChecked = selectedColKeys.includes(col.key);
+                    
+                    return (
+                        <div 
+                            key={col.key} 
+                            className={`flex items-center gap-1.5 cursor-pointer select-none hover:text-blue-600`}
+                            onClick={() => toggleColumn(col.key)}
+                        >
+                            {isChecked ? (
+                                <CheckSquare size={16} className={`text-blue-600`} />
+                            ) : (
+                                <Square size={16} className="text-gray-400" />
+                            )}
+                            <span className={`${isChecked ? 'font-medium text-gray-800' : 'text-gray-500'}`}>{col.label}</span>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+
         <div className="flex items-center gap-3">
           <button 
             onClick={() => window.print()}

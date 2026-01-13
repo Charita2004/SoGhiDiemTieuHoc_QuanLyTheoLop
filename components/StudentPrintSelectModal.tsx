@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { X, Search } from 'lucide-react';
 import { Student } from '../types';
 import { STUDENTS_DATA } from '../constants';
@@ -7,10 +7,17 @@ interface StudentPrintSelectModalProps {
   isOpen: boolean;
   onClose: () => void;
   selectedClass: string;
-  onConfirm: (selectedStudents: Student[]) => void;
+  onConfirm: (selectedStudents: Student[], selectedColumns: string[]) => void;
   term?: string;
   onTermChange?: (term: string) => void;
 }
+
+const COL_OPTIONS = [
+    { key: 'gk1', label: 'Giữa HK 1' },
+    { key: 'ck1', label: 'Cuối HK 1' },
+    { key: 'gk2', label: 'Giữa HK 2' },
+    { key: 'cn', label: 'Cuối năm' },
+];
 
 const StudentPrintSelectModal: React.FC<StudentPrintSelectModalProps> = ({ 
   isOpen, 
@@ -22,6 +29,31 @@ const StudentPrintSelectModal: React.FC<StudentPrintSelectModalProps> = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selectedColumns, setSelectedColumns] = useState<string[]>(['gk1', 'ck1', 'gk2', 'cn']);
+
+  // Auto-select columns based on Term with STRICT default values per requirement
+  useEffect(() => {
+    switch (term) {
+        case 'Giữa kỳ 1':
+            // Trường hợp 1: Chỉ chọn GK1
+            setSelectedColumns(['gk1']);
+            break;
+        case 'Cuối kỳ 1':
+            // Trường hợp 2: Chọn GK1 và CK1
+            setSelectedColumns(['gk1', 'ck1']);
+            break;
+        case 'Giữa kỳ 2':
+            // Trường hợp 3: Chỉ chọn GK2
+            setSelectedColumns(['gk2']);
+            break;
+        case 'Cuối năm':
+            // Trường hợp 4: Chọn tất cả
+            setSelectedColumns(['gk1', 'ck1', 'gk2', 'cn']);
+            break;
+        default:
+            setSelectedColumns(['gk1', 'ck1', 'gk2', 'cn']);
+    }
+  }, [term]);
 
   const filteredStudents = useMemo(() => {
     return STUDENTS_DATA.filter(s => 
@@ -48,13 +80,50 @@ const StudentPrintSelectModal: React.FC<StudentPrintSelectModalProps> = ({
     setSelectedIds(newSet);
   };
 
+  // Determine if a column checkbox should be disabled
+  const isColDisabled = (key: string) => {
+      switch (term) {
+          case 'Giữa kỳ 1':
+              return key !== 'gk1'; // Disable everything except GK1
+          case 'Cuối kỳ 1':
+              return key === 'gk2' || key === 'cn'; // Disable GK2 and CN
+          case 'Giữa kỳ 2':
+              return key !== 'gk2'; // Disable everything except GK2
+          case 'Cuối năm':
+              return false; // Enable all
+          default:
+              return false;
+      }
+  };
+
+  const toggleColumn = (key: string) => {
+      // Prevent toggling if disabled
+      if (isColDisabled(key)) return;
+
+      setSelectedColumns(prev => {
+          if (prev.includes(key)) {
+              return prev.filter(k => k !== key);
+          } else {
+              // Maintain order: gk1 -> ck1 -> gk2 -> cn
+              const newSelection = [...prev, key];
+              return COL_OPTIONS
+                  .filter(opt => newSelection.includes(opt.key))
+                  .map(opt => opt.key);
+          }
+      });
+  };
+
   const handlePrint = () => {
     const selected = filteredStudents.filter(s => selectedIds.has(s.id));
     if (selected.length === 0) {
       alert('Vui lòng chọn ít nhất một học sinh để in.');
       return;
     }
-    onConfirm(selected);
+    if (selectedColumns.length === 0) {
+        alert('Vui lòng chọn ít nhất một cột điểm để hiển thị.');
+        return;
+    }
+    onConfirm(selected, selectedColumns);
   };
 
   if (!isOpen) return null;
@@ -70,10 +139,10 @@ const StudentPrintSelectModal: React.FC<StudentPrintSelectModalProps> = ({
           </button>
         </div>
 
-        {/* 2. Fixed Controls (Filters & Actions) */}
-        <div className="px-6 py-5 shrink-0 bg-white border-b border-gray-200">
+        {/* 2. Fixed Controls (Filters & Configuration) */}
+        <div className="px-6 py-5 shrink-0 bg-white border-b border-gray-200 flex flex-col gap-5">
           {/* Filters Row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
              <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-medium text-gray-700">Học kỳ</label>
                 <select 
@@ -103,8 +172,37 @@ const StudentPrintSelectModal: React.FC<StudentPrintSelectModalProps> = ({
              </div>
           </div>
 
+          {/* NEW: Column Configuration Row */}
+          <div className="flex flex-col gap-2 bg-blue-50 border border-blue-100 rounded-lg p-3">
+             <label className="text-xs font-bold text-blue-800 uppercase tracking-wide">Cấu hình cột hiển thị</label>
+             <div className="flex flex-wrap gap-6">
+                {COL_OPTIONS.map(opt => {
+                    const disabled = isColDisabled(opt.key);
+                    const checked = selectedColumns.includes(opt.key);
+                    
+                    return (
+                        <label 
+                            key={opt.key} 
+                            className={`flex items-center gap-2 group select-none ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                        >
+                            <input 
+                                type="checkbox" 
+                                className={`w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 ${disabled ? 'cursor-not-allowed bg-gray-100' : 'cursor-pointer'}`}
+                                checked={checked}
+                                onChange={() => toggleColumn(opt.key)}
+                                disabled={disabled}
+                            />
+                            <span className={`text-sm ${checked ? 'text-indigo-900 font-bold' : 'text-gray-600 group-hover:text-gray-900'}`}>
+                                {opt.label}
+                            </span>
+                        </label>
+                    );
+                })}
+             </div>
+          </div>
+
           {/* Action Row */}
-          <div className="flex justify-end items-center gap-4">
+          <div className="flex justify-end items-center gap-4 pt-1">
             <div className="flex items-center gap-2 text-sm text-gray-700 mr-auto">
                <input 
                 type="checkbox" 
@@ -131,12 +229,8 @@ const StudentPrintSelectModal: React.FC<StudentPrintSelectModalProps> = ({
         </div>
 
         {/* 3. Table Container - Scrollable Area */}
-        {/* We use flex-1 to take up remaining space, and flex-col to manage the inner table wrapper */}
         <div className="flex-1 min-h-0 p-6 bg-gray-50 flex flex-col">
-          {/* Inner Wrapper with Border & Radius - The table sits here */}
           <div className="bg-white border border-gray-200 rounded-lg shadow-sm flex flex-col flex-1 min-h-0 overflow-hidden">
-             
-             {/* Scrollable Table Wrapper */}
              <div className="flex-1 overflow-auto custom-scrollbar">
                <table className="w-full text-sm text-left border-collapse">
                   <thead className="bg-[#1d4ed8] text-white sticky top-0 z-10">
@@ -176,7 +270,6 @@ const StudentPrintSelectModal: React.FC<StudentPrintSelectModalProps> = ({
                   </tbody>
                </table>
              </div>
-             
           </div>
         </div>
 

@@ -1,4 +1,4 @@
-import { Student } from './types';
+import { Student, UserConfig } from './types';
 
 export const SUBJECTS_BY_CLASS: Record<string, string[]> = {
   '1A2': [
@@ -23,6 +23,42 @@ export const SUBJECTS_BY_CLASS: Record<string, string[]> = {
     'Nghệ thuật (Âm nhạc, Mỹ thuật)',
     'Hoạt động trải nghiệm'
   ]
+};
+
+// MOCK DATA FOR COMMENT BANK MODULE
+export const MOCK_USERS_DB: Record<string, UserConfig> = {
+  'admin': {
+    id: 'admin',
+    name: 'Administrator',
+    role: 'admin',
+    avatarColor: 'from-blue-500 to-indigo-600',
+    assignments: {
+        'Khối 01': ['Toán', 'Tiếng Việt', 'Đạo đức'],
+        'Khối 02': ['Toán', 'Tiếng Việt'],
+        'Khối 03': ['Toán', 'Tiếng Việt', 'Tiếng Anh'],
+        'Khối 04': ['Toán', 'Tiếng Việt', 'Tiếng Anh', 'Khoa học'],
+        'Khối 05': ['Toán', 'Tiếng Việt', 'Tiếng Anh', 'Khoa học']
+    }
+  },
+  'user_a': {
+    id: 'user_a',
+    name: 'Cô Nguyễn Thị Anh (GV Bộ môn)',
+    role: 'subject_teacher',
+    avatarColor: 'from-pink-500 to-rose-600',
+    assignments: {
+      'Khối 01': ['Tiếng Anh'],
+      'Khối 05': ['Tiếng Anh']
+    }
+  },
+  'user_b': {
+    id: 'user_b',
+    name: 'Thầy Trần Văn Toán (GV Chủ nhiệm)',
+    role: 'homeroom_teacher',
+    avatarColor: 'from-emerald-500 to-teal-600',
+    assignments: {
+      'Khối 01': ['Toán', 'Tiếng Việt', 'Tự nhiên và Xã hội', 'Đạo đức']
+    }
+  }
 };
 
 export const STUDENTS_DATA: Student[] = [
